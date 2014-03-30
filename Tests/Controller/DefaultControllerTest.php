@@ -49,7 +49,7 @@ class DefaultControllerTest extends JsonTestCase
                     {
                         "application": "ormd2",
                         "version": "2.1.2.250",
-                        // "createdAt": "' . ($biggerCreatedAt + 1) . '",
+                        "createdAt": "' . ($biggerCreatedAt + 1) . '",
                         "state" : "release",
                         "osCode": "linux",
                         "osBit": "32",

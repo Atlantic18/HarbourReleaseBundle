@@ -62,6 +62,7 @@ class DefaultControllerTest extends JsonTestCase
         $this->assertIsJsonResponse($client);
         $this->assertIsStatusCode($client, 201);
         $jsonRequest  = new JsonParser($client->getResponse()->getContent());
+        $this->assertEquals('ok', $jsonRequest->getMandatoryParam('message'));
         $this->assertEquals('ok', $jsonRequest->getMandatoryParam('status'));
 
         $client = $this->doGetRequest('/v1/release/latest/ormd2/beta/linux/32');

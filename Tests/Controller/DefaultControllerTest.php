@@ -49,7 +49,7 @@ class DefaultControllerTest extends JsonTestCase
                     {
                         "application": "ormd2",
                         "version": "2.1.2.250",
-                        "createdAt": "' . ($biggerCreatedAt + 1) . '",
+                        // "createdAt": "' . ($biggerCreatedAt + 1) . '",
                         "state" : "release",
                         "osCode": "linux",
                         "osBit": "32",
@@ -60,9 +60,8 @@ class DefaultControllerTest extends JsonTestCase
             }'
         );
         $this->assertIsJsonResponse($client);
-        // $this->assertIsStatusCode($client, 201);
+        $this->assertIsStatusCode($client, 201);
         $jsonRequest  = new JsonParser($client->getResponse()->getContent());
-        $this->assertEquals('ok', $jsonRequest->getMandatoryParam('message'));
         $this->assertEquals('ok', $jsonRequest->getMandatoryParam('status'));
 
         $client = $this->doGetRequest('/v1/release/latest/ormd2/beta/linux/32');

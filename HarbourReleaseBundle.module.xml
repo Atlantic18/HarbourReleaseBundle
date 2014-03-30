@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<orm-designer version="2.3.0.826" mvc="Symfony2" orm="Doctrine2">
+  <module name="ReleaseBundle" import-format="Doctrine2Php" import-path="Entity" uuid="812af97f-a6c4-4c2f-8854-697ed82e752d">
+    <entity name="Release" uuid="6e84cf7e-068a-4b3a-ae21-f95c2e441e03">
+      <field name="id" type="integer" required="true" primary="true" auto-increment="true" uuid="377d7c0f-65ab-41a5-bd9f-b65d1b99e617"/>
+      <field name="application" type="string" size="64" required="true" uuid="02a96df1-3c2b-4c82-a7b9-8ec0d8b14a93"/>
+      <field name="version" type="string" size="32" required="true" uuid="9ea10b02-def8-4bd6-aa6b-4dff0a7447ab"/>
+      <field name="state" type="string" size="16" required="true" uuid="4c0aa145-5499-4cae-9cdd-02c10563e13a"/>
+      <field name="os_code" type="string" size="16" required="true" uuid="11ab421b-ff98-4e0d-b028-f5749ba25e26"/>
+      <field name="os_bit" type="integer" required="true" uuid="6963615e-d9f6-4a04-b1de-334f9a841367"/>
+      <field name="os_min_version" type="integer" uuid="66e1ddb3-2bdf-4c8f-922c-86b1f29ea9c7"/>
+      <field name="change_log" type="string" size="9999" uuid="e001a413-1dd0-47f9-98fc-101df5d8a3a5"/>
+      <field name="filename" type="string" size="64" required="true" uuid="8fbdb8be-a324-4554-8b20-5e08a113da43"/>
+      <field name="filetype" type="string" size="32" required="true" uuid="90cfbe66-b69d-460e-aa12-061c8042cd20"/>
+      <field name="created_at" type="datetime" required="true" uuid="02ac64a4-a499-41dc-92b1-60a7bdc16767"/>
+      <field name="account_id" type="integer" required="true" uuid="462c4049-8746-400d-b535-a412f5182565"/>
+      <index name="HarbouReleaseApplicationNameIndex">
+        <index-field name="application"/>
+      </index>
+      <index name="HarbourReleaseApplicationVersionIndex">
+        <index-field name="application"/>
+        <index-field name="version"/>
+      </index>
+      <index name="HarbouReleaseGetApplicationVersionIndex">
+        <index-field name="application"/>
+        <index-field name="state"/>
+        <index-field name="os_code"/>
+        <index-field name="os_bit"/>
+        <index-field name="os_min_version"/>
+      </index>
+      <index name="HarbouReleaseGetApplicationIndex">
+        <index-field name="application"/>
+        <index-field name="state"/>
+        <index-field name="os_code"/>
+        <index-field name="os_bit"/>
+      </index>
+      <orm-attributes>
+        <attribute name="table">harbour_release</attribute>
+      </orm-attributes>
+    </entity>
+    <association from="Release" to="Account" caption="Application Account" inverse-alias="account" uuid="43ce06b4-559a-4f78-9f75-05ac91e527c1">
+      <association-field from="account_id" to="id"/>
+    </association>
+    <orm-attributes>
+      <attribute name="namespace">Harbour\ReleaseBundle\Entity</attribute>
+      <attribute name="filename-format">entity-name-only</attribute>
+    </orm-attributes>
+  </module>
+  <visual-data>
+    <entity uuid="6e84cf7e-068a-4b3a-ae21-f95c2e441e03" position-x="125" position-y="104" size-x="0" size-x2="128" size-y="0" size-y2="171"/>
+    <module uuid="812af97f-a6c4-4c2f-8854-697ed82e752d" bk-color="4294375930" position-x="25" position-y="1400" size-x="0" size-x2="575" size-y="0" size-y2="500"/>
+  </visual-data>
+</orm-designer>

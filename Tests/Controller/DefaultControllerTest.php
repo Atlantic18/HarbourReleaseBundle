@@ -228,6 +228,15 @@ class DefaultControllerTest extends JsonTestCase
                         "osBit": "64",
                         "fileName" : "ormd2-win-32-106.exe",
                         "fileType" : "installer"
+                    },
+                    {
+                        "application": "pulpo",
+                        "version": "2.1.2.252",
+                        "state" : "release",
+                        "osCode": "windows",
+                        "osBit": "64",
+                        "fileName" : "ormd2-win-32-106.exe",
+                        "fileType" : "installer"
                     }
                 ]
             }'
@@ -261,6 +270,15 @@ class DefaultControllerTest extends JsonTestCase
         $this->assertEquals("markdown_changelog", $jsonRequest->getMandatoryParam('releases[1].changeLog'));
         $this->assertEquals(self::$uri_prefix . "2.1.2.250/ormd2-win-32-106.zip", $jsonRequest->getMandatoryParam('releases[1].fileName'));
         $this->assertEquals("portable", $jsonRequest->getMandatoryParam('releases[1].fileType'));
+
+        $client = $this->doGetRequest('/v1/release/list/pulpo');
+        $this->assertIsJsonResponse($client);
+        $this->assertIsStatusCode($client, 200);
+        $jsonRequest  = new JsonParser($client->getResponse()->getContent());
+        $this->assertEquals('ok', $jsonRequest->getMandatoryParam('status'));
+        $this->assertCount(1, $jsonRequest->getMandatoryParam('releases'));
+        $this->assertEquals("pulpo", $jsonRequest->getMandatoryParam('releases[0].application'));
+        $this->assertEquals("http://www.orm-designer.com/uploads/pulpo/2.1.2.252/ormd2-win-32-106.exe", $jsonRequest->getMandatoryParam('releases[0].fileName'));
 
         $client = $this->doGetRequest('/v1/release/list/unknown');
         $this->assertIsJsonResponse($client);

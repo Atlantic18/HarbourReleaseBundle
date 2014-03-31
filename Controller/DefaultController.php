@@ -7,7 +7,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 
-use Coral\CoreBundle\Controller\JsonController;
+use Coral\ContentBundle\Controller\ConfigurableJsonController;
 use Coral\CoreBundle\Utility\JsonParser;
 use Coral\CoreBundle\Exception\JsonException;
 use Coral\CoreBundle\Exception\AuthenticationException;
@@ -17,10 +17,8 @@ use Harbour\ReleaseBundle\Entity\Release;
 /**
  * @Route("/v1/release")
  */
-class DefaultController extends JsonController
+class DefaultController extends ConfigurableJsonController
 {
-    private static $uri_prefix = "http://www.orm-designer.com/uploads/ormd2/";
-
     /**
      * @Route("/add")
      * @Method("POST")
@@ -102,6 +100,9 @@ class DefaultController extends JsonController
 
         $this->throwNotFoundExceptionIf(!count($releases), "Application name not found.");
 
+        $configuration = $this->getConfiguration('config-release', true);
+        $uriPrefix = $configuration->getOptionalParam('harbour.release.' . $application);
+
         $items = array();
         foreach ($releases as $release) {
             $items[] = array(
@@ -113,7 +114,7 @@ class DefaultController extends JsonController
                 'changeLog'      => $release['change_log'] ? $release['change_log'] : null,
                 'minimalVersion' => $release['os_min_version'] ? $release['os_min_version'] : null,
                 'createdAt'      => $release['created_at']->getTimestamp(),
-                'fileName'       => self::$uri_prefix . $release['version'] . '/' . $release['filename'],
+                'fileName'       => $uriPrefix . $release['version'] . '/' . $release['filename'],
                 'fileType'       => $release['filetype']
             );
         }
@@ -162,6 +163,9 @@ class DefaultController extends JsonController
                 ' Agent:' . $this->get("request")->headers->get('User-Agent') .
                 ' URI:' . "/latest/$application/$state/$osCode/$osBit/$osVersion"
         ));
+
+        $configuration = $this->getConfiguration('config-release', true);
+        $uriPrefix = $configuration->getOptionalParam('harbour.release.' . $application);
 
         try {
             $latestVersion = $this->getDoctrine()->getManager()->createQuery(
@@ -217,7 +221,7 @@ class DefaultController extends JsonController
                 'changeLog'      => $release['change_log'] ? $release['change_log'] : null,
                 'minimalVersion' => $release['os_min_version'] ? $release['os_min_version'] : null,
                 'createdAt'      => $release['created_at']->getTimestamp(),
-                'fileName'       => self::$uri_prefix . $release['version'] . '/' . $release['filename'],
+                'fileName'       => $uriPrefix . $release['version'] . '/' . $release['filename'],
                 'fileType'       => $release['filetype']
             );
         }

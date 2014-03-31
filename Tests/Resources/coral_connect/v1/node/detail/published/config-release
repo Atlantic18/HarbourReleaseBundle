@@ -1,0 +1,23 @@
+{
+    "status": "ok",
+    "id": 1,
+    "name": "Config Release",
+    "slug": "config-release",
+    "sections": [
+        {
+            "name": "body",
+            "items": [
+                {
+                    "permid": "abc123",
+                    "content": "Here is some text content",
+                    "renderer": "markdown"
+                },
+                {
+                    "permid": "abc234",
+                    "content": "{ \"harbour\": { \"release\": { \"ormd2\": \"http://www.orm-designer.com/uploads/ormd2/\", \"pulpo\": \"http://www.orm-designer.com/uploads/pulpo/\" } } }",
+                    "renderer": "json"
+                }
+            ]
+        }
+    ]
+}

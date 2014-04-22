@@ -318,7 +318,7 @@ class DefaultControllerTest extends JsonTestCase
 
         $client = $this->doAlternativeAccountGetRequest('/v1/release/list/ormd2');
         $this->assertIsJsonResponse($client);
-        $this->assertIsStatusCode($client, 404);
+        $this->assertIsStatusCode($client, 200);
     }
 
     public function testChange()

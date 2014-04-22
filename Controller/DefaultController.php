@@ -90,11 +90,9 @@ class DefaultController extends ConfigurableJsonController
         $releases = $this->getDoctrine()->getManager()->createQuery(
                 'SELECT r
                 FROM HarbourReleaseBundle:Release r
-                WHERE r.account = :account_id
-                AND r.application LIKE :application
+                WHERE r.application LIKE :application
                 ORDER BY r.created_at DESC, r.os_code ASC'
             )
-            ->setParameter('account_id', $this->getAccount()->getId())
             ->setParameter('application', $application)
             ->getResult(\Doctrine\ORM\AbstractQuery::HYDRATE_ARRAY);
 
@@ -171,15 +169,13 @@ class DefaultController extends ConfigurableJsonController
             $latestVersion = $this->getDoctrine()->getManager()->createQuery(
                     'SELECT r.version
                     FROM HarbourReleaseBundle:Release r
-                    WHERE r.account = :account_id
-                    AND r.application = :application
+                    WHERE r.application = :application
                     AND r.state = :state
                     AND r.os_code = :osCode
                     AND r.os_bit = :osBit
                     AND r.os_min_version <= :osVersion
                     ORDER BY r.created_at DESC'
                 )
-                ->setParameter('account_id', $this->getAccount()->getId())
                 ->setParameter('application', $application)
                 ->setParameter('state', $state)
                 ->setParameter('osCode', $osCode)
@@ -196,8 +192,7 @@ class DefaultController extends ConfigurableJsonController
         $releases = $this->getDoctrine()->getManager()->createQuery(
                 'SELECT r
                 FROM HarbourReleaseBundle:Release r
-                WHERE r.account = :account_id
-                AND r.application = :application
+                WHERE r.application = :application
                 AND r.state = :state
                 AND r.os_code = :osCode
                 AND r.os_bit = :osBit
@@ -205,7 +200,6 @@ class DefaultController extends ConfigurableJsonController
                 AND r.os_min_version <= :osVersion
                 ORDER BY r.created_at DESC'
             )
-            ->setParameter('account_id', $this->getAccount()->getId())
             ->setParameter('application', $application)
             ->setParameter('state', $state)
             ->setParameter('osCode', $osCode)

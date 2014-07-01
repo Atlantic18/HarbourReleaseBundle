@@ -166,15 +166,15 @@ class DefaultController extends ConfigurableJsonController
         $uriPrefix = $configuration->getOptionalParam('harbour.release.' . $application);
 
         try {
-            $latestVersion = $this->getDoctrine()->getManager()->createQuery(
-                    'SELECT r.version
+            $supportedOsVersion = $this->getDoctrine()->getManager()->createQuery(
+                    'SELECT r.os_min_version
                     FROM HarbourReleaseBundle:Release r
                     WHERE r.application = :application
                     AND r.state = :state
                     AND r.os_code = :osCode
                     AND r.os_bit = :osBit
                     AND r.os_min_version <= :osVersion
-                    ORDER BY r.created_at DESC'
+                    ORDER BY r.os_min_version DESC'
                 )
                 ->setParameter('application', $application)
                 ->setParameter('state', $state)
@@ -196,16 +196,14 @@ class DefaultController extends ConfigurableJsonController
                 AND r.state = :state
                 AND r.os_code = :osCode
                 AND r.os_bit = :osBit
-                AND r.version = :version
-                AND r.os_min_version <= :osVersion
+                AND r.os_min_version = :osVersion
                 ORDER BY r.created_at DESC'
             )
             ->setParameter('application', $application)
             ->setParameter('state', $state)
             ->setParameter('osCode', $osCode)
             ->setParameter('osBit', $osBit)
-            ->setParameter('version', $latestVersion)
-            ->setParameter('osVersion', $osVersion)
+            ->setParameter('osVersion', $supportedOsVersion)
             ->getResult(\Doctrine\ORM\AbstractQuery::HYDRATE_ARRAY);
 
         $items = array();

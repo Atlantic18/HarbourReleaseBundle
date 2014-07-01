@@ -166,15 +166,15 @@ class DefaultController extends ConfigurableJsonController
         $uriPrefix = $configuration->getOptionalParam('harbour.release.' . $application);
 
         try {
-            $supportedOsVersion = $this->getDoctrine()->getManager()->createQuery(
-                    'SELECT r.os_min_version
+            $supportedOsVersions = $this->getDoctrine()->getManager()->createQuery(
+                    'SELECT r.os_min_version, r.version
                     FROM HarbourReleaseBundle:Release r
                     WHERE r.application = :application
                     AND r.state = :state
                     AND r.os_code = :osCode
                     AND r.os_bit = :osBit
                     AND r.os_min_version <= :osVersion
-                    ORDER BY r.os_min_version DESC'
+                    ORDER BY r.os_min_version DESC, r.created_at DESC'
                 )
                 ->setParameter('application', $application)
                 ->setParameter('state', $state)
@@ -182,7 +182,12 @@ class DefaultController extends ConfigurableJsonController
                 ->setParameter('osBit', $osBit)
                 ->setParameter('osVersion', $osVersion)
                 ->setMaxResults(1)
-                ->getSingleScalarResult();
+                ->getResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
+
+            if(count($supportedOsVersions) != 1)
+            {
+                $this->throwNotFoundExceptionIf(true, "No release has been found.");
+            }
         }
         catch(\Doctrine\ORM\NoResultException $e)
         {
@@ -195,15 +200,17 @@ class DefaultController extends ConfigurableJsonController
                 WHERE r.application = :application
                 AND r.state = :state
                 AND r.os_code = :osCode
+                AND r.version = :version
                 AND r.os_bit = :osBit
                 AND r.os_min_version = :osVersion
                 ORDER BY r.created_at DESC'
             )
             ->setParameter('application', $application)
             ->setParameter('state', $state)
+            ->setParameter('version', $supportedOsVersions[0]['version'])
             ->setParameter('osCode', $osCode)
             ->setParameter('osBit', $osBit)
-            ->setParameter('osVersion', $supportedOsVersion)
+            ->setParameter('osVersion', $supportedOsVersions[0]['os_min_version'])
             ->getResult(\Doctrine\ORM\AbstractQuery::HYDRATE_ARRAY);
 
         $items = array();

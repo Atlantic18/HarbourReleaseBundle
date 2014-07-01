@@ -36,7 +36,7 @@ class DefaultControllerTest extends JsonTestCase
                     },
                     {
                         "application": "ormd2",
-                        "version": "2.1.2.250",
+                        "version": "2.1.2.253",
                         "createdAt": "' . $biggerCreatedAt . '",
                         "changeLog": "markdown_changelog2",
                         "state" : "beta",
@@ -48,7 +48,7 @@ class DefaultControllerTest extends JsonTestCase
                     },
                     {
                         "application": "ormd2",
-                        "version": "2.1.2.250",
+                        "version": "2.1.2.251",
                         "createdAt": "' . $biggerCreatedAt . '",
                         "changeLog": "markdown_changelog2",
                         "state" : "beta",
@@ -67,6 +67,17 @@ class DefaultControllerTest extends JsonTestCase
                         "osBit": "32",
                         "fileName" : "ormd2-win-32-106.exe",
                         "fileType" : "installer"
+                    },
+                    {
+                        "application": "ormd2",
+                        "version": "2.1.2.250",
+                        "createdAt": "' . ($biggerCreatedAt) . '",
+                        "state" : "release",
+                        "osCode": "mac",
+                        "osBit": "64",
+                        "minimalVersion" : "0",
+                        "fileName" : "ormd2-win-32-106.exe",
+                        "fileType" : "portable"
                     }
                 ]
             }'
@@ -82,12 +93,23 @@ class DefaultControllerTest extends JsonTestCase
         $jsonRequest  = new JsonParser($client->getResponse()->getContent());
         $this->assertCount(1, $jsonRequest->getMandatoryParam('releases'));
         $this->assertEquals('ok', $jsonRequest->getMandatoryParam('status'));
-        $this->assertEquals("2.1.2.250", $jsonRequest->getMandatoryParam('releases[0].version'));
+        $this->assertEquals("2.1.2.253", $jsonRequest->getMandatoryParam('releases[0].version'));
         $this->assertEquals($biggerCreatedAt, $jsonRequest->getMandatoryParam('releases[0].createdAt'));
-        $this->assertEquals(self::$uri_prefix . "2.1.2.250/ormd2-win-32-106.exe", $jsonRequest->getMandatoryParam('releases[0].fileName'));
+        $this->assertEquals(self::$uri_prefix . "2.1.2.253/ormd2-win-32-106.exe", $jsonRequest->getMandatoryParam('releases[0].fileName'));
         $this->assertEquals("markdown_changelog2", $jsonRequest->getMandatoryParam('releases[0].changeLog'));
         $this->assertEquals(120006, $jsonRequest->getMandatoryParam('releases[0].minimalVersion'));
         $this->assertEquals("installer", $jsonRequest->getMandatoryParam('releases[0].fileType'));
+
+        $client = $this->doGetRequest('/v1/release/latest/ormd2/release/mac/64');
+        $this->assertIsJsonResponse($client);
+        $this->assertIsStatusCode($client, 200);
+        $jsonRequest  = new JsonParser($client->getResponse()->getContent());
+        $this->assertCount(1, $jsonRequest->getMandatoryParam('releases'));
+        $this->assertEquals('ok', $jsonRequest->getMandatoryParam('status'));
+        $this->assertEquals("2.1.2.250", $jsonRequest->getMandatoryParam('releases[0].version'));
+        $this->assertEquals($biggerCreatedAt, $jsonRequest->getMandatoryParam('releases[0].createdAt'));
+        $this->assertEquals(self::$uri_prefix . "2.1.2.250/ormd2-win-32-106.exe", $jsonRequest->getMandatoryParam('releases[0].fileName'));
+        $this->assertEquals("portable", $jsonRequest->getMandatoryParam('releases[0].fileType'));
 
         $client = $this->doGetRequest('/v1/release/latest/ormd2/beta/linux/32/110002');
         $this->assertIsJsonResponse($client);
@@ -103,7 +125,7 @@ class DefaultControllerTest extends JsonTestCase
         $jsonRequest  = new JsonParser($client->getResponse()->getContent());
         $this->assertCount(1, $jsonRequest->getMandatoryParam('releases'));
         $this->assertEquals('ok', $jsonRequest->getMandatoryParam('status'));
-        $this->assertEquals("2.1.2.250", $jsonRequest->getMandatoryParam('releases[0].version'));
+        $this->assertEquals("2.1.2.253", $jsonRequest->getMandatoryParam('releases[0].version'));
 
         $client = $this->doGetRequest('/v1/release/latest/unknown/beta/linux/32/110002');
         $this->assertIsJsonResponse($client);

@@ -227,4 +227,103 @@ class DefaultController extends ConfigurableJsonController
 
         return new JsonResponse(array('status'  => 'ok', 'releases' => $items), 200);
     }
+
+    /**
+     * @Route("/default-link/{application}/{fileType}/{state}/{osCode}/{osBit}/{osVersion}")
+     * @Method("GET")
+     */
+    public function defaultLinkAction($application, $fileType, $state, $osCode, $osBit, $osVersion = PHP_INT_MAX)
+    {
+        $configuration = $this->getConfiguration('config-release', true);
+        $filename      = false;
+
+        try {
+            //search for full match
+            $filename = $this->getDoctrine()->getManager()->createQuery(
+                    'SELECT r.filename
+                    FROM HarbourReleaseBundle:Release r
+                    WHERE r.application = :application
+                    AND r.state = :state
+                    AND r.os_code = :osCode
+                    AND r.os_bit = :osBit
+                    AND r.os_min_version <= :osVersion
+                    AND r.filetype = :fileType
+                    ORDER BY r.os_min_version DESC, r.created_at DESC'
+                )
+                ->setParameter('application', $application)
+                ->setParameter('state', $state)
+                ->setParameter('osCode', $osCode)
+                ->setParameter('osBit', $osBit)
+                ->setParameter('osVersion', $osVersion)
+                ->setParameter('fileType', $fileType)
+                ->setMaxResults(1)
+                ->getSingleScalarResult();
+        }
+        catch(\Doctrine\ORM\NoResultException $e)
+        {
+            $filename = false;
+        }
+
+        if(!$filename)
+        {
+            try {
+                //search for match without min os version
+                $filename = $this->getDoctrine()->getManager()->createQuery(
+                        'SELECT r.filename
+                        FROM HarbourReleaseBundle:Release r
+                        WHERE r.application = :application
+                        AND r.state = :state
+                        AND r.os_code = :osCode
+                        AND r.os_bit = :osBit
+                        AND r.filetype = :fileType
+                        ORDER BY r.created_at DESC, r.os_min_version DESC'
+                    )
+                    ->setParameter('application', $application)
+                    ->setParameter('state', $state)
+                    ->setParameter('osCode', $osCode)
+                    ->setParameter('osBit', $osBit)
+                    ->setParameter('fileType', $fileType)
+                    ->setMaxResults(1)
+                    ->getSingleScalarResult();
+            }
+            catch(\Doctrine\ORM\NoResultException $e)
+            {
+                $filename = false;
+            }
+        }
+
+        if(!$filename)
+        {
+            try {
+                //search for default release
+                $filename = $this->getDoctrine()->getManager()->createQuery(
+                        'SELECT r.filename
+                        FROM HarbourReleaseBundle:Release r
+                        WHERE r.application = :application
+                        AND r.state = :state
+                        AND r.os_code = :osCode
+                        AND r.os_bit = :osBit
+                        AND r.filetype = :fileType
+                        ORDER BY r.created_at DESC'
+                    )
+                    ->setParameter('application', $application)
+                    ->setParameter('state', $configuration->getMandatoryParam('harbour.release.default.state'))
+                    ->setParameter('osCode', $configuration->getMandatoryParam('harbour.release.default.os_code'))
+                    ->setParameter('osBit', $configuration->getMandatoryParam('harbour.release.default.os_bit'))
+                    ->setParameter('fileType', $configuration->getMandatoryParam('harbour.release.default.file_type'))
+                    ->setMaxResults(1)
+                    ->getSingleScalarResult();
+            }
+            catch(\Doctrine\ORM\NoResultException $e)
+            {
+                $this->throwNotFoundExceptionIf(true, "No release has been found.");
+            }
+        }
+
+        return new JsonResponse(
+            array(
+                'status'  => 'ok',
+                'filename' => $configuration->getOptionalParam('harbour.release.' . $application) . $filename
+            ), 200);
+    }
 }

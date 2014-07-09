@@ -14,7 +14,7 @@
                 },
                 {
                     "permid": "abc234",
-                    "content": "{ \"harbour\": { \"release\": { \"ormd2\": \"http://www.orm-designer.com/uploads/ormd2/\", \"pulpo\": \"http://www.orm-designer.com/uploads/pulpo/\" } } }",
+                    "content": "{ \"harbour\": { \"release\": { \"ormd2\": \"http://www.orm-designer.com/uploads/ormd2/\", \"pulpo\": \"http://www.orm-designer.com/uploads/pulpo/\", \"default\": { \"state\": \"release\", \"os_code\": \"windows\", \"os_bit\": \"32\", \"file_type\": \"installer\" } } } }",
                     "renderer": "json"
                 }
             ]

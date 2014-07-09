@@ -9,18 +9,9 @@ class DefaultControllerTest extends JsonTestCase
 {
     private static $uri_prefix = "http://www.orm-designer.com/uploads/ormd2/";
 
-    public function testLatest()
+    private function getReleasesConfig($createdAt, $biggerCreatedAt)
     {
-        $this->loadFixtures(array(
-            'Coral\CoreBundle\Tests\DataFixtures\ORM\MinimalSettingsData'
-        ));
-
-        $createdAt = time() - 30*86400;
-        $biggerCreatedAt = time() + 30*86400;
-
-        $client = $this->doPostRequest(
-            '/v1/release/add',
-            '{
+        return '{
                 "releases": [
                     {
                         "application": "ormd2",
@@ -31,7 +22,7 @@ class DefaultControllerTest extends JsonTestCase
                         "osBit": "32",
                         "changeLog": "markdown_changelog",
                         "minimalVersion" : "100006",
-                        "fileName" : "ormd2-win-32-106.zip",
+                        "fileName" : "ormd2-win-32-104.zip",
                         "fileType" : "portable"
                     },
                     {
@@ -43,7 +34,7 @@ class DefaultControllerTest extends JsonTestCase
                         "osCode": "linux",
                         "minimalVersion" : "120006",
                         "osBit": "32",
-                        "fileName" : "ormd2-win-32-106.exe",
+                        "fileName" : "ormd2-win-32-107.exe",
                         "fileType" : "installer"
                     },
                     {
@@ -76,12 +67,86 @@ class DefaultControllerTest extends JsonTestCase
                         "osCode": "mac",
                         "osBit": "64",
                         "minimalVersion" : "0",
-                        "fileName" : "ormd2-win-32-106.exe",
+                        "fileName" : "ormd2-win-32-116.exe",
                         "fileType" : "portable"
+                    },
+                    {
+                        "application": "ormd2",
+                        "version": "2.1.2.250",
+                        "createdAt": "' . ($biggerCreatedAt) . '",
+                        "state" : "release",
+                        "osCode": "windows",
+                        "osBit": "32",
+                        "minimalVersion" : "0",
+                        "fileName" : "ormd2-win-32-110.exe",
+                        "fileType" : "installer"
+                    },
+                    {
+                        "application": "ormd2",
+                        "version": "2.1.2.253",
+                        "createdAt": "' . ($biggerCreatedAt + 1) . '",
+                        "state" : "release",
+                        "osCode": "windows",
+                        "osBit": "32",
+                        "minimalVersion" : "0",
+                        "fileName" : "ormd2-win-32-112.exe",
+                        "fileType" : "installer"
                     }
                 ]
-            }'
-        );
+            }';
+    }
+
+    public function testDefaultLink()
+    {
+        $this->loadFixtures(array(
+            'Coral\CoreBundle\Tests\DataFixtures\ORM\MinimalSettingsData'
+        ));
+
+        $createdAt = time() - 30*86400;
+        $biggerCreatedAt = time() + 30*86400;
+
+        $client = $this->doPostRequest('/v1/release/add', $this->getReleasesConfig($createdAt, $biggerCreatedAt));
+        $this->assertIsJsonResponse($client);
+        $this->assertIsStatusCode($client, 201);
+        $jsonRequest  = new JsonParser($client->getResponse()->getContent());
+        $this->assertEquals('ok', $jsonRequest->getMandatoryParam('status'));
+
+        $client = $this->doGetRequest('/v1/release/default-link/ormd2/installer/beta/linux/32/120000');
+        $this->assertIsJsonResponse($client);
+        $this->assertIsStatusCode($client, 200);
+        $jsonRequest  = new JsonParser($client->getResponse()->getContent());
+        $this->assertEquals('ok', $jsonRequest->getMandatoryParam('status'));
+        $this->assertEquals("http://www.orm-designer.com/uploads/ormd2/ormd2-win-32-106.exe", $jsonRequest->getMandatoryParam('filename'));
+
+        $client = $this->doGetRequest('/v1/release/default-link/ormd2/installer/beta/linux/32/140000');
+        $this->assertIsJsonResponse($client);
+        $this->assertIsStatusCode($client, 200);
+        $jsonRequest  = new JsonParser($client->getResponse()->getContent());
+        $this->assertEquals('ok', $jsonRequest->getMandatoryParam('status'));
+        $this->assertEquals("http://www.orm-designer.com/uploads/ormd2/ormd2-win-32-107.exe", $jsonRequest->getMandatoryParam('filename'));
+
+        $client = $this->doGetRequest('/v1/release/default-link/ormd2/portable/beta/brabus/128');
+        $this->assertIsJsonResponse($client);
+        $this->assertIsStatusCode($client, 200);
+        $jsonRequest  = new JsonParser($client->getResponse()->getContent());
+        $this->assertEquals('ok', $jsonRequest->getMandatoryParam('status'));
+        $this->assertEquals("http://www.orm-designer.com/uploads/ormd2/ormd2-win-32-112.exe", $jsonRequest->getMandatoryParam('filename'));
+
+        $client = $this->doGetRequest('/v1/release/default-link/nothing/beta/linux/32/120000');
+        $this->assertIsJsonResponse($client);
+        $this->assertIsStatusCode($client, 404);
+    }
+
+    public function testLatest()
+    {
+        $this->loadFixtures(array(
+            'Coral\CoreBundle\Tests\DataFixtures\ORM\MinimalSettingsData'
+        ));
+
+        $createdAt = time() - 30*86400;
+        $biggerCreatedAt = time() + 30*86400;
+
+        $client = $this->doPostRequest('/v1/release/add', $this->getReleasesConfig($createdAt, $biggerCreatedAt));
         $this->assertIsJsonResponse($client);
         $this->assertIsStatusCode($client, 201);
         $jsonRequest  = new JsonParser($client->getResponse()->getContent());
@@ -95,7 +160,7 @@ class DefaultControllerTest extends JsonTestCase
         $this->assertEquals('ok', $jsonRequest->getMandatoryParam('status'));
         $this->assertEquals("2.1.2.253", $jsonRequest->getMandatoryParam('releases[0].version'));
         $this->assertEquals($biggerCreatedAt, $jsonRequest->getMandatoryParam('releases[0].createdAt'));
-        $this->assertEquals(self::$uri_prefix . "2.1.2.253/ormd2-win-32-106.exe", $jsonRequest->getMandatoryParam('releases[0].fileName'));
+        $this->assertEquals(self::$uri_prefix . "2.1.2.253/ormd2-win-32-107.exe", $jsonRequest->getMandatoryParam('releases[0].fileName'));
         $this->assertEquals("markdown_changelog2", $jsonRequest->getMandatoryParam('releases[0].changeLog'));
         $this->assertEquals(120006, $jsonRequest->getMandatoryParam('releases[0].minimalVersion'));
         $this->assertEquals("installer", $jsonRequest->getMandatoryParam('releases[0].fileType'));
@@ -108,7 +173,7 @@ class DefaultControllerTest extends JsonTestCase
         $this->assertEquals('ok', $jsonRequest->getMandatoryParam('status'));
         $this->assertEquals("2.1.2.250", $jsonRequest->getMandatoryParam('releases[0].version'));
         $this->assertEquals($biggerCreatedAt, $jsonRequest->getMandatoryParam('releases[0].createdAt'));
-        $this->assertEquals(self::$uri_prefix . "2.1.2.250/ormd2-win-32-106.exe", $jsonRequest->getMandatoryParam('releases[0].fileName'));
+        $this->assertEquals(self::$uri_prefix . "2.1.2.250/ormd2-win-32-116.exe", $jsonRequest->getMandatoryParam('releases[0].fileName'));
         $this->assertEquals("portable", $jsonRequest->getMandatoryParam('releases[0].fileType'));
 
         $client = $this->doGetRequest('/v1/release/latest/ormd2/beta/linux/32/110002');

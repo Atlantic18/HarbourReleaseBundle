@@ -52,7 +52,7 @@ class DefaultControllerTest extends JsonTestCase
                     {
                         "application": "ormd2",
                         "version": "2.1.2.250",
-                        "createdAt": "' . ($biggerCreatedAt + 1) . '",
+                        "createdAt": "' . ($biggerCreatedAt + 2) . '",
                         "state" : "release",
                         "osCode": "linux",
                         "osBit": "32",
@@ -77,7 +77,7 @@ class DefaultControllerTest extends JsonTestCase
                         "state" : "release",
                         "osCode": "windows",
                         "osBit": "32",
-                        "minimalVersion" : "0",
+                        "minimalVersion" : "20",
                         "fileName" : "ormd2-win-32-110.exe",
                         "fileType" : "installer"
                     },
@@ -94,6 +94,73 @@ class DefaultControllerTest extends JsonTestCase
                     }
                 ]
             }';
+    }
+
+    public function testLatestRelease()
+    {
+        $this->loadFixtures(array(
+            'Coral\CoreBundle\Tests\DataFixtures\ORM\MinimalSettingsData'
+        ));
+
+        $createdAt = time() - 30*86400;
+        $biggerCreatedAt = time() + 30*86400;
+
+        $client = $this->doPostRequest('/v1/release/add', $this->getReleasesConfig($createdAt, $biggerCreatedAt));
+        $this->assertIsJsonResponse($client);
+        $this->assertIsStatusCode($client, 201);
+        $jsonRequest  = new JsonParser($client->getResponse()->getContent());
+        $this->assertEquals('ok', $jsonRequest->getMandatoryParam('status'));
+
+        $client = $this->doGetRequest('/v1/release/latest/ormd2/release');
+        $this->assertIsJsonResponse($client);
+        $this->assertIsStatusCode($client, 200);
+        $jsonRequest  = new JsonParser($client->getResponse()->getContent());
+        $this->assertCount(3, $jsonRequest->getMandatoryParam('release.files'));
+        $this->assertEquals('ok', $jsonRequest->getMandatoryParam('status'));
+        $this->assertEquals("2.1.2.250", $jsonRequest->getMandatoryParam('release.version'));
+        $this->assertEquals("", $jsonRequest->getMandatoryParam('release.changeLog'));
+        $this->assertEquals($biggerCreatedAt + 2, $jsonRequest->getMandatoryParam('release.files[0].createdAt'));
+        $this->assertEquals(self::$uri_prefix . "2.1.2.250/ormd2-win-32-106.exe", $jsonRequest->getMandatoryParam('release.files[0].fileName'));
+        $this->assertEquals("installer", $jsonRequest->getMandatoryParam('release.files[0].fileType'));
+        $this->assertEquals("32", $jsonRequest->getMandatoryParam('release.files[0].osBit'));
+        $this->assertEquals("linux", $jsonRequest->getMandatoryParam('release.files[0].osCode'));
+
+        $this->assertEquals($biggerCreatedAt, $jsonRequest->getMandatoryParam('release.files[1].createdAt'));
+        $this->assertEquals(self::$uri_prefix . "2.1.2.250/ormd2-win-32-116.exe", $jsonRequest->getMandatoryParam('release.files[1].fileName'));
+        $this->assertEquals("portable", $jsonRequest->getMandatoryParam('release.files[1].fileType'));
+        $this->assertEquals("64", $jsonRequest->getMandatoryParam('release.files[1].osBit'));
+        $this->assertEquals("mac", $jsonRequest->getMandatoryParam('release.files[1].osCode'));
+        $this->assertTrue(false === $jsonRequest->getOptionalParam('release.files[1].minimalVersion'));
+
+        $this->assertEquals($biggerCreatedAt, $jsonRequest->getMandatoryParam('release.files[2].createdAt'));
+        $this->assertEquals(self::$uri_prefix . "2.1.2.250/ormd2-win-32-110.exe", $jsonRequest->getMandatoryParam('release.files[2].fileName'));
+        $this->assertEquals("installer", $jsonRequest->getMandatoryParam('release.files[2].fileType'));
+        $this->assertEquals("32", $jsonRequest->getMandatoryParam('release.files[2].osBit'));
+        $this->assertEquals("windows", $jsonRequest->getMandatoryParam('release.files[2].osCode'));
+        $this->assertEquals("20", $jsonRequest->getMandatoryParam('release.files[2].minimalVersion'));
+
+        $client = $this->doGetRequest('/v1/release/latest/ormd2/invalid');
+        $this->assertIsJsonResponse($client);
+        $this->assertIsStatusCode($client, 404);
+
+        $client = $this->doGetRequest('/v1/release/latest/invalid/beta');
+        $this->assertIsJsonResponse($client);
+        $this->assertIsStatusCode($client, 404);
+
+        $client = $this->doGetRequest('/v1/release/latest/ormd2/beta');
+        $this->assertIsJsonResponse($client);
+        $this->assertIsStatusCode($client, 200);
+        $jsonRequest  = new JsonParser($client->getResponse()->getContent());
+        $this->assertCount(1, $jsonRequest->getMandatoryParam('release.files'));
+        $this->assertEquals('ok', $jsonRequest->getMandatoryParam('status'));
+        $this->assertEquals("2.1.2.253", $jsonRequest->getMandatoryParam('release.version'));
+        $this->assertEquals("markdown_changelog2", $jsonRequest->getMandatoryParam('release.changeLog'));
+        $this->assertEquals($biggerCreatedAt, $jsonRequest->getMandatoryParam('release.files[0].createdAt'));
+        $this->assertEquals(self::$uri_prefix . "2.1.2.253/ormd2-win-32-107.exe", $jsonRequest->getMandatoryParam('release.files[0].fileName'));
+        $this->assertEquals("installer", $jsonRequest->getMandatoryParam('release.files[0].fileType'));
+        $this->assertEquals("120006", $jsonRequest->getMandatoryParam('release.files[0].minimalVersion'));
+        $this->assertEquals("32", $jsonRequest->getMandatoryParam('release.files[0].osBit'));
+        $this->assertEquals("linux", $jsonRequest->getMandatoryParam('release.files[0].osCode'));
     }
 
     public function testDefaultLink()

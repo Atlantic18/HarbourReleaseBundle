@@ -229,6 +229,69 @@ class DefaultController extends ConfigurableJsonController
     }
 
     /**
+     * @Route("/latest/{application}/{state}")
+     * @Method("GET")
+     */
+    public function latestDownloadAction($application, $state)
+    {
+        $configuration = $this->getConfiguration('config-release', true);
+        $uriPrefix = $configuration->getOptionalParam('harbour.release.' . $application);
+
+        try {
+            $latestVersion = $this->getDoctrine()->getManager()->createQuery(
+                    'SELECT r.version
+                    FROM HarbourReleaseBundle:Release r
+                    WHERE r.application = :application
+                    AND r.state = :state
+                    ORDER BY r.created_at DESC'
+                )
+                ->setParameter('application', $application)
+                ->setParameter('state', $state)
+                ->setMaxResults(1)
+                ->getSingleScalarResult();
+        }
+        catch(\Doctrine\ORM\NoResultException $e)
+        {
+            $this->throwNotFoundExceptionIf(true, "No release has been found.");
+        }
+
+        $releases = $this->getDoctrine()->getManager()->createQuery(
+                'SELECT r
+                FROM HarbourReleaseBundle:Release r
+                WHERE r.application = :application
+                AND r.state = :state
+                AND r.version = :version
+                ORDER BY r.created_at DESC'
+            )
+            ->setParameter('application', $application)
+            ->setParameter('state', $state)
+            ->setParameter('version', $latestVersion)
+            ->getResult(\Doctrine\ORM\AbstractQuery::HYDRATE_ARRAY);
+
+        $items = array(
+            'version'   => $latestVersion,
+            'changeLog' => '',
+            'files'     => array()
+        );
+        foreach ($releases as $release) {
+            if(!$items['changeLog'] && $release['change_log'])
+            {
+                $items['changeLog'] = $release['change_log'];
+            }
+            $items['files'][]   = array(
+                'createdAt'      => $release['created_at']->getTimestamp(),
+                'osCode'         => $release['os_code'],
+                'osBit'          => $release['os_bit'],
+                'fileName'       => $uriPrefix . $release['version'] . '/' . $release['filename'],
+                'minimalVersion' => $release['os_min_version'] ? $release['os_min_version'] : null,
+                'fileType'       => $release['filetype']
+            );
+        }
+
+        return new JsonResponse(array('status'  => 'ok', 'release' => $items), 200);
+    }
+
+    /**
      * @Route("/default-link/{application}/{fileType}/{state}/{osCode}/{osBit}/{osVersion}")
      * @Method("GET")
      */

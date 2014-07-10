@@ -228,32 +228,10 @@ class DefaultController extends ConfigurableJsonController
         return new JsonResponse(array('status'  => 'ok', 'releases' => $items), 200);
     }
 
-    /**
-     * @Route("/latest/{application}/{state}")
-     * @Method("GET")
-     */
-    public function latestDownloadAction($application, $state)
+    private function getFilesByVersion($application, $state, $version)
     {
         $configuration = $this->getConfiguration('config-release', true);
         $uriPrefix = $configuration->getOptionalParam('harbour.release.' . $application);
-
-        try {
-            $latestVersion = $this->getDoctrine()->getManager()->createQuery(
-                    'SELECT r.version
-                    FROM HarbourReleaseBundle:Release r
-                    WHERE r.application = :application
-                    AND r.state = :state
-                    ORDER BY r.created_at DESC'
-                )
-                ->setParameter('application', $application)
-                ->setParameter('state', $state)
-                ->setMaxResults(1)
-                ->getSingleScalarResult();
-        }
-        catch(\Doctrine\ORM\NoResultException $e)
-        {
-            $this->throwNotFoundExceptionIf(true, "No release has been found.");
-        }
 
         $releases = $this->getDoctrine()->getManager()->createQuery(
                 'SELECT r
@@ -265,11 +243,11 @@ class DefaultController extends ConfigurableJsonController
             )
             ->setParameter('application', $application)
             ->setParameter('state', $state)
-            ->setParameter('version', $latestVersion)
+            ->setParameter('version', $version)
             ->getResult(\Doctrine\ORM\AbstractQuery::HYDRATE_ARRAY);
 
         $items = array(
-            'version'   => $latestVersion,
+            'version'   => $version,
             'changeLog' => '',
             'files'     => array()
         );
@@ -288,7 +266,68 @@ class DefaultController extends ConfigurableJsonController
             );
         }
 
-        return new JsonResponse(array('status'  => 'ok', 'release' => $items), 200);
+        return $items;
+    }
+
+    /**
+     * @Route("/latest/{application}/{state}")
+     * @Method("GET")
+     */
+    public function latestDownloadAction($application, $state)
+    {
+        try {
+            $latestVersion = $this->getDoctrine()->getManager()->createQuery(
+                    'SELECT r.version
+                    FROM HarbourReleaseBundle:Release r
+                    WHERE r.application = :application
+                    AND r.state = :state
+                    ORDER BY r.created_at DESC'
+                )
+                ->setParameter('application', $application)
+                ->setParameter('state', $state)
+                ->setMaxResults(1)
+                ->getSingleScalarResult();
+        }
+        catch(\Doctrine\ORM\NoResultException $e)
+        {
+            $this->throwNotFoundExceptionIf(true, "No release has been found.");
+        }
+
+        return new JsonResponse(array(
+            'status'  => 'ok',
+            'release' => $this->getFilesByVersion($application, $state, $latestVersion)
+        ), 200);
+    }
+
+    /**
+     * @Route("/log/{application}/{state}/{limit}")
+     * @Method("GET")
+     */
+    public function logAction($application, $state, $limit = 10)
+    {
+        $limit = intval($limit);
+        $limit = ($limit >= 10 || $limit <= 0) ? 10 : $limit;
+
+        $versions = $this->getDoctrine()->getManager()->createQuery(
+                'SELECT r.version
+                FROM HarbourReleaseBundle:Release r
+                WHERE r.application = :application
+                AND r.state = :state
+                ORDER BY r.created_at DESC'
+            )
+            ->setParameter('application', $application)
+            ->setParameter('state', $state)
+            ->setMaxResults($limit)
+            ->getResult(\Doctrine\ORM\AbstractQuery::HYDRATE_ARRAY);
+
+        $items = array();
+
+        foreach ($versions as $version)
+        {
+            $items[] = $this->getFilesByVersion($application, $state, $version['version']);
+        }
+
+        return new JsonResponse(array('status'  => 'ok', 'releases' => $items), 200);
     }
 
     /**

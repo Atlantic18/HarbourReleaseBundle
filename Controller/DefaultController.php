@@ -366,6 +366,31 @@ class DefaultController extends ConfigurableJsonController
             $filename = false;
         }
 
+        try {
+            //search for match without filetype
+            $filename = $this->getDoctrine()->getManager()->createQuery(
+                    'SELECT r.filename
+                    FROM HarbourReleaseBundle:Release r
+                    WHERE r.application = :application
+                    AND r.state = :state
+                    AND r.os_code = :osCode
+                    AND r.os_bit = :osBit
+                    AND r.os_min_version <= :osVersion
+                    ORDER BY r.os_min_version DESC, r.created_at DESC'
+                )
+                ->setParameter('application', $application)
+                ->setParameter('state', $state)
+                ->setParameter('osCode', $osCode)
+                ->setParameter('osBit', $osBit)
+                ->setParameter('osVersion', $osVersion)
+                ->setMaxResults(1)
+                ->getSingleScalarResult();
+        }
+        catch(\Doctrine\ORM\NoResultException $e)
+        {
+            $filename = false;
+        }
+
         if(!$filename)
         {
             try {

@@ -236,6 +236,13 @@ class DefaultControllerTest extends JsonTestCase
         $this->assertEquals('ok', $jsonRequest->getMandatoryParam('status'));
         $this->assertEquals("http://www.orm-designer.com/uploads/ormd2/ormd2-win-32-106.exe", $jsonRequest->getMandatoryParam('filename'));
 
+        $client = $this->doGetRequest('/v1/release/default-link/ormd2/unknown/beta/linux/32/120000');
+        $this->assertIsJsonResponse($client);
+        $this->assertIsStatusCode($client, 200);
+        $jsonRequest  = new JsonParser($client->getResponse()->getContent());
+        $this->assertEquals('ok', $jsonRequest->getMandatoryParam('status'));
+        $this->assertEquals("http://www.orm-designer.com/uploads/ormd2/ormd2-win-32-106.exe", $jsonRequest->getMandatoryParam('filename'));
+
         $client = $this->doGetRequest('/v1/release/default-link/ormd2/installer/beta/linux/32/140000');
         $this->assertIsJsonResponse($client);
         $this->assertIsStatusCode($client, 200);

@@ -342,7 +342,7 @@ class DefaultController extends ConfigurableJsonController
         try {
             //search for full match
             $filename = $this->getDoctrine()->getManager()->createQuery(
-                    'SELECT r.filename
+                    'SELECT CONCAT(r.version, \'/\', r.filename)
                     FROM HarbourReleaseBundle:Release r
                     WHERE r.application = :application
                     AND r.state = :state
@@ -369,7 +369,7 @@ class DefaultController extends ConfigurableJsonController
         try {
             //search for match without filetype
             $filename = $this->getDoctrine()->getManager()->createQuery(
-                    'SELECT r.filename
+                    'SELECT CONCAT(r.version, \'/\', r.filename)
                     FROM HarbourReleaseBundle:Release r
                     WHERE r.application = :application
                     AND r.state = :state
@@ -396,7 +396,7 @@ class DefaultController extends ConfigurableJsonController
             try {
                 //search for match without min os version
                 $filename = $this->getDoctrine()->getManager()->createQuery(
-                        'SELECT r.filename
+                        'SELECT CONCAT(r.version, \'/\', r.filename)
                         FROM HarbourReleaseBundle:Release r
                         WHERE r.application = :application
                         AND r.state = :state
@@ -424,7 +424,7 @@ class DefaultController extends ConfigurableJsonController
             try {
                 //search for default release
                 $filename = $this->getDoctrine()->getManager()->createQuery(
-                        'SELECT r.filename
+                        'SELECT CONCAT(r.version, \'/\', r.filename)
                         FROM HarbourReleaseBundle:Release r
                         WHERE r.application = :application
                         AND r.state = :state

@@ -234,28 +234,28 @@ class DefaultControllerTest extends JsonTestCase
         $this->assertIsStatusCode($client, 200);
         $jsonRequest  = new JsonParser($client->getResponse()->getContent());
         $this->assertEquals('ok', $jsonRequest->getMandatoryParam('status'));
-        $this->assertEquals("http://www.orm-designer.com/uploads/ormd2/ormd2-win-32-106.exe", $jsonRequest->getMandatoryParam('filename'));
+        $this->assertEquals("http://www.orm-designer.com/uploads/ormd2/2.1.2.251/ormd2-win-32-106.exe", $jsonRequest->getMandatoryParam('filename'));
 
         $client = $this->doGetRequest('/v1/release/default-link/ormd2/unknown/beta/linux/32/120000');
         $this->assertIsJsonResponse($client);
         $this->assertIsStatusCode($client, 200);
         $jsonRequest  = new JsonParser($client->getResponse()->getContent());
         $this->assertEquals('ok', $jsonRequest->getMandatoryParam('status'));
-        $this->assertEquals("http://www.orm-designer.com/uploads/ormd2/ormd2-win-32-106.exe", $jsonRequest->getMandatoryParam('filename'));
+        $this->assertEquals("http://www.orm-designer.com/uploads/ormd2/2.1.2.251/ormd2-win-32-106.exe", $jsonRequest->getMandatoryParam('filename'));
 
         $client = $this->doGetRequest('/v1/release/default-link/ormd2/installer/beta/linux/32/140000');
         $this->assertIsJsonResponse($client);
         $this->assertIsStatusCode($client, 200);
         $jsonRequest  = new JsonParser($client->getResponse()->getContent());
         $this->assertEquals('ok', $jsonRequest->getMandatoryParam('status'));
-        $this->assertEquals("http://www.orm-designer.com/uploads/ormd2/ormd2-win-32-107.exe", $jsonRequest->getMandatoryParam('filename'));
+        $this->assertEquals("http://www.orm-designer.com/uploads/ormd2/2.1.2.253/ormd2-win-32-107.exe", $jsonRequest->getMandatoryParam('filename'));
 
         $client = $this->doGetRequest('/v1/release/default-link/ormd2/portable/beta/brabus/128');
         $this->assertIsJsonResponse($client);
         $this->assertIsStatusCode($client, 200);
         $jsonRequest  = new JsonParser($client->getResponse()->getContent());
         $this->assertEquals('ok', $jsonRequest->getMandatoryParam('status'));
-        $this->assertEquals("http://www.orm-designer.com/uploads/ormd2/ormd2-win-32-112.exe", $jsonRequest->getMandatoryParam('filename'));
+        $this->assertEquals("http://www.orm-designer.com/uploads/ormd2/2.1.2.253/ormd2-win-32-112.exe", $jsonRequest->getMandatoryParam('filename'));
 
         $client = $this->doGetRequest('/v1/release/default-link/nothing/beta/linux/32/120000');
         $this->assertIsJsonResponse($client);

@@ -313,6 +313,7 @@ class DefaultController extends ConfigurableJsonController
                 FROM HarbourReleaseBundle:Release r
                 WHERE r.application = :application
                 AND r.state = :state
+                GROUP BY r.version
                 ORDER BY r.created_at DESC'
             )
             ->setParameter('application', $application)

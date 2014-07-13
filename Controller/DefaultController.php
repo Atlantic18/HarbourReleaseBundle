@@ -309,11 +309,10 @@ class DefaultController extends ConfigurableJsonController
         $limit = ($limit >= 10 || $limit <= 0) ? 10 : $limit;
 
         $versions = $this->getDoctrine()->getManager()->createQuery(
-                'SELECT r.version
+                'SELECT DISTINCT r.version
                 FROM HarbourReleaseBundle:Release r
                 WHERE r.application = :application
                 AND r.state = :state
-                GROUP BY r.version
                 ORDER BY r.created_at DESC'
             )
             ->setParameter('application', $application)
@@ -339,7 +338,7 @@ class DefaultController extends ConfigurableJsonController
     {
         $configuration = $this->getConfiguration('config-release', true);
         $filename      = false;
-						
+
         try {
             //search for full match
             $filename = $this->getDoctrine()->getManager()->createQuery(
@@ -394,7 +393,7 @@ class DefaultController extends ConfigurableJsonController
               $filename = false;
           }
         }
-				
+
         if(!$filename)
         {
             try {
